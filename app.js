@@ -88,8 +88,7 @@ const ReplyReview = mongoose.model("ReplyReview", new mongoose.Schema({
 }));
 const Notification = mongoose.model("Notification", new mongoose.Schema({
 }));
-const ProjectSpecification = mongoose.model("ProjectSpecification", new mongoose.Schema({
-}));
+
 
 // auth api's
 app.post('/regestration', (req, res)=>{
@@ -220,16 +219,27 @@ app.post("/publish_blog/:id", async(req, res)=>{
       res.send(error).status(400);
   });
 });
+app.post("/publish_many", async(req, res)=>{
+  const blog = await Blog.find({_id: {'$in': req.body.array}, published: false});
+  blog.forEach((elem)=>{
+    elem.published = true;
+    Blog.findByIdAndUpdate(elem._id, elem).then(()=>{
+      console.log("done");
+    });
+  });
+  res.json({message:"All blogs has been published sucessfully", blog}).status(200);
 
-
-app.post("/publish_many", (req, res)=>{
 });
 
 
 // other api
 app.post ("/upload_file", (req, res)=>{
 });
+app.post("/upload_multiple_file", (req, res)=>{
+});
 app.post("/upload_attached_file", (req, res)=>{
+});
+app.post("upload_multiple_attached_file", (req, res)=>{
 });
 
 
@@ -273,7 +283,6 @@ app.post("/comments", (req, res)=>{
       res.send(error).status(400);
   });
 });
-
 app.get("/comments", async(req, res)=>{
   const comment = await Commnet.find({
       user_id: req.body.user_id, 
@@ -298,7 +307,6 @@ app.post("/reply", (req, res)=>{
       res.send(error).status(400);
   });
 });
-
 app.get("/reply", async(req, res)=>{
   const reply = await Reply.find({
       user_id: req.body.user_id, 
@@ -314,9 +322,16 @@ app.get("/reply", async(req, res)=>{
 
 app.post("share", (req, res)=>{
 });
+app.post("/multiple_share", (req, res)=>{
+});
+
 
 // get total no. of blog, total no. of user, total category
-app.get("/project_spec", (req, res)=>{
+app.get("/project_spec", async(req, res)=>{
+  const totalBlogs = await Blog.find().count();
+  const totalUser = await Users.find().count();
+  const category = await Blog.find().select("category").distinct("category").count();
+  res.send({"blogs":totalBlogs, "users": totalUser, "categories": category});
 });
 app.get("/notification", async(req, res)=>{
   const notification = await Notification.find({user_id: req.body.user_id})
@@ -326,7 +341,6 @@ app.get("/notification", async(req, res)=>{
       res.send("There is no notification for this user").status(400);
   }
 });
-
 app.post("/subscribe", (req, res)=>{
   const subscribe = new Subscribe(req.body)
   subscribe.save().then(()=>{
