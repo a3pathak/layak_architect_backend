@@ -149,6 +149,12 @@ app.post("/forgot_pass", (req, res)=>{
 app.put("/change_pass", (req, res)=>{
 });
 
+// admin auth api's
+app.post("/admin_login", (req, res)=>{
+});
+app.put("/admin_change_pass", (req, res)=>{
+});
+
 
 // Blog api's
 app.post("/create_blog", (req, res)=>{
